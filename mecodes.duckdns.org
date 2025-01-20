@@ -1,0 +1,33 @@
+server {
+    server_name mecodes.duckdns.org;
+
+    # Enable error logging with debug level
+    error_log /var/log/nginx/debug.log debug;
+
+    listen 443 ssl;
+
+    ssl_certificate /etc/letsencrypt/live/mecodes.duckdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mecodes.duckdns.org/privkey.pem;
+
+    location / {
+        # Debugging header to inspect the upstream server
+        add_header X-Debug-ProxyPass $upstream_addr;
+
+        # Proxy configuration
+        proxy_pass https://d5oj8z4muughk.cloudfront.net;
+
+        # Correct syntax for resolver
+	# resolver 8.8.8.8 ipv6=off;
+
+        # Headers
+        proxy_set_header Host d5oj8z4muughk.cloudfront.net;  # Ensure Host header is set correctly
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Enable error interception and detailed logs
+        proxy_intercept_errors on;
+        error_log /var/log/nginx/proxy_error.log debug;
+    }
+}
+
